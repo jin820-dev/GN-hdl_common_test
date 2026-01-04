@@ -1,0 +1,12 @@
+
+# ==== DUT Manifest ====
+set MANIFEST(DUT_NAME)      "gn_common_test"
+set MANIFEST(DUT_SRC_DIR)   "src"
+set MANIFEST(BOARD_DIR)     "sim/board"
+set MANIFEST(BOARD_NAME)    "board_top"
+set MANIFEST(SCENARIO_DIR)  "sim/scenario"
+set MANIFEST(SVA_DIR)       "sim/sva"
+set MANIFEST(SRCLIST)       "sim/srclist.txt"
+set MANIFEST(MDLLIST)       "sim/mdllist.txt"
+set MANIFEST(TESTLIST)      "sim/testlist.txt"
+set MANIFEST(TESTLIST_ALL)  "sim/testlist_all.txt"

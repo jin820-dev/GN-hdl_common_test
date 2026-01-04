@@ -1,0 +1,3 @@
+GN-mdl_axi4_stream
+GN-mdl_clock
+GN-mdl_reset
