@@ -1,10 +1,10 @@
 // ------------------------------------------------------------
-// File    : sample_test.sv
+// File    : send_file_test.sv
 // Author  : jin820
-// Created : 2026-01-01
+// Created : 2026-01-02
 // Updated :
 // History:
-// 2026-01-01  Initial version
+// 2026-01-04  Initial version
 // ------------------------------------------------------------
 
 `timescale 1ns/1ps
@@ -24,6 +24,17 @@ module test_scenario ();
     // include signal assign
     `include "tb_ref.svh"
 
+    // set data file path 
+    string DATA_FILE;
+    initial begin
+        if ($value$plusargs("DATA_DIR=%s", DATA_FILE)) begin
+          $display("DATA_DIR value was %s", DATA_FILE);
+        end else begin
+          $display("+DATA_DIR= not found");
+        end
+        DATA_FILE = {DATA_FILE, "/32bit_32words.txt"};
+    end
+
     // test start
     initial begin
 
@@ -35,14 +46,9 @@ module test_scenario ();
         wait(reset_n == 1'b1);
         @(posedge clk);
         
-        // send_word
-        send_word(32'hDEADBEEF);
-        repeat(1) @(posedge clk);
-        send_word(32'h12345678);
-        repeat(1) @(posedge clk);
-        send_words_fixed(32'hDEADBEEF, 5);
-        repeat(1) @(posedge clk);
-        send_words_fixed(32'h12345678, 5);
+        // send_word (dwidth = 32bit)
+        send_file(DATA_FILE, 32, 256);
+
         repeat(10) @(posedge clk);
 
         $display("=== DONE %s", TEST_NAME);

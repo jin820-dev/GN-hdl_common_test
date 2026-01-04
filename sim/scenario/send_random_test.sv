@@ -1,10 +1,10 @@
 // ------------------------------------------------------------
-// File    : sample_test.sv
+// File    : send_random_test.sv
 // Author  : jin820
-// Created : 2026-01-01
+// Created : 2026-01-02
 // Updated :
 // History:
-// 2026-01-01  Initial version
+// 2026-01-02  Initial version
 // ------------------------------------------------------------
 
 `timescale 1ns/1ps
@@ -36,13 +36,9 @@ module test_scenario ();
         @(posedge clk);
         
         // send_word
-        send_word(32'hDEADBEEF);
+        send_words_random(5);
         repeat(1) @(posedge clk);
-        send_word(32'h12345678);
-        repeat(1) @(posedge clk);
-        send_words_fixed(32'hDEADBEEF, 5);
-        repeat(1) @(posedge clk);
-        send_words_fixed(32'h12345678, 5);
+        send_words_random(5);
         repeat(10) @(posedge clk);
 
         $display("=== DONE %s", TEST_NAME);

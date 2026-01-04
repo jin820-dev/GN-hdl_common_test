@@ -5,6 +5,7 @@
 // Updated :
 // History:
 // 2026-01-01  Initial version
+// 2026-01-04  Add a sending task
 // ------------------------------------------------------------
 
 // -------------------------------
@@ -51,3 +52,24 @@ task automatic send_word(input logic [31:0] data);
     board_top.i_mdl_axis_mst.send_word(data);
 endtask
 
+task automatic send_words_fixed (
+     input logic [31:0] data
+    ,input int unsigned num_words
+);
+    board_top.i_mdl_axis_mst.send_words_fixed(data, num_words);
+endtask
+
+task automatic send_words_random (
+    input int unsigned num_words
+);
+    board_top.i_mdl_axis_mst.send_words_random(num_words);
+endtask
+
+task automatic send_file (
+     input string filename
+    ,input int unsigned tdata_width
+    ,input int unsigned max_words = 256
+);
+    board_top.i_mdl_axis_mst.send_file(filename, tdata_width, max_words);
+    
+endtask
