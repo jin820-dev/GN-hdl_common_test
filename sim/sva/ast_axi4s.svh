@@ -5,6 +5,7 @@
 // Updated :
 // History:
 // 2026-01-01  Initial version
+// 2026-01-05  bugfix
 // ------------------------------------------------------------
 
 // --------------------------------------------------
@@ -22,7 +23,7 @@ endproperty
 property p_tdata_stable;
   @(posedge clk)
     disable iff (!reset_n)
-    tvalid && !tready |-> ##1 $stable(tdata);
+    tvalid && !tready |=> $stable(tdata) until_with (tready);
 endproperty
 
 // --------------------------------------------------

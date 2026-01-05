@@ -5,6 +5,7 @@
 // Updated :
 // History:
 // 2026-01-01  Initial version
+// 2026-01-05  Add a scoreboard instance
 // ------------------------------------------------------------
 
 `timescale 1ns/1ps
@@ -12,8 +13,12 @@
 
 module board_top();
 
-    parameter P_S_AXIS_DWIDTH = 32;
-    parameter P_M_AXIS_DWIDTH = 8;
+    parameter P_S_AXIS_DWIDTH       = 32;
+    parameter P_M_AXIS_DWIDTH       = 8;
+    parameter int P_TRDY_MIN_CYC    = 1;
+    parameter int P_TRDY_MAX_CYC    = 3;
+    parameter int P_TRDY_ASSERT_PCT = 30;
+
 
     logic                       clk    ;
     logic                       reset_n;
@@ -26,62 +31,81 @@ module board_top();
 
     // clock & reset
     gn_mdl_clock #(
-        .P_FREQ_MHZ ( 125.0 )
+       .P_FREQ_MHZ ( 125.0 )
     ) i_clock (
-        .clk ( clk )
+       .clk ( clk )
     );
 
     gn_mdl_reset #(
-        .P_RELS_TIME ( 100 )
+       .P_RELS_TIME ( 100 )
     ) i_reset (
-        .reset_n ( reset_n )
+       .reset_n ( reset_n )
     );
 
     // DUT instance
     gn_common_test #(
-         .P_S_AXIS_DWIDTH (P_S_AXIS_DWIDTH)
-        ,.P_M_AXIS_DWIDTH (P_M_AXIS_DWIDTH)
+        .P_S_AXIS_DWIDTH (P_S_AXIS_DWIDTH)
+       ,.P_M_AXIS_DWIDTH (P_M_AXIS_DWIDTH)
     ) i_common_test(
-         .clk                   ( clk               )
-        ,.reset_n               ( reset_n           )
-        ,.s_axis_tdata          ( w_s_axis_tdata    )
-        ,.s_axis_tvalid         ( w_s_axis_tvalid   )
-        ,.s_axis_tready         ( w_s_axis_tready   )
-        ,.m_axis_tdata          ( w_m_axis_tdata    )
-        ,.m_axis_tvalid         ( w_m_axis_tvalid   )
-        ,.m_axis_tready         ( w_m_axis_tready   )
+        .clk                   ( clk               )
+       ,.reset_n               ( reset_n           )
+       ,.s_axis_tdata          ( w_s_axis_tdata    )
+       ,.s_axis_tvalid         ( w_s_axis_tvalid   )
+       ,.s_axis_tready         ( w_s_axis_tready   )
+       ,.m_axis_tdata          ( w_m_axis_tdata    )
+       ,.m_axis_tvalid         ( w_m_axis_tvalid   )
+       ,.m_axis_tready         ( w_m_axis_tready   )
     );
 
     // Model instance
     gn_mdl_axis_mst #(
-        .P_DWIDTH (P_S_AXIS_DWIDTH)
+       .P_DWIDTH (P_S_AXIS_DWIDTH)
     ) i_mdl_axis_mst (
-         .clk                   ( clk                )
-        ,.reset_n               ( reset_n            )
-        ,.tx_axis_tdata         ( w_s_axis_tdata     )
-        ,.tx_axis_tvalid        ( w_s_axis_tvalid    )
-        ,.tx_axis_tready        ( w_s_axis_tready    )
+        .clk                   ( clk                )
+       ,.reset_n               ( reset_n            )
+       ,.tx_axis_tdata         ( w_s_axis_tdata     )
+       ,.tx_axis_tvalid        ( w_s_axis_tvalid    )
+       ,.tx_axis_tready        ( w_s_axis_tready    )
     );
 
     gn_mdl_axis_slv #(
-        .P_DWIDTH (P_M_AXIS_DWIDTH)
+        .P_DWIDTH               ( P_M_AXIS_DWIDTH    )
+       ,.P_TRDY_MIN_CYC         ( P_TRDY_MIN_CYC     )
+       ,.P_TRDY_MAX_CYC         ( P_TRDY_MAX_CYC     )
+       ,.P_TRDY_ASSERT_PCT      ( P_TRDY_ASSERT_PCT  )
     ) i_mdl_axis_slv (
-         .clk                   ( clk                )
-        ,.reset_n               ( reset_n            )
-        ,.rx_axis_tdata         ( w_m_axis_tdata     )
-        ,.rx_axis_tvalid        ( w_m_axis_tvalid    )
-        ,.rx_axis_tready        ( w_m_axis_tready    )
+        .clk                   ( clk                )
+       ,.reset_n               ( reset_n            )
+       ,.rx_axis_tdata         ( w_m_axis_tdata     )
+       ,.rx_axis_tvalid        ( w_m_axis_tvalid    )
+       ,.rx_axis_tready        ( w_m_axis_tready    )
     );
 
     // SVA module instance
     ast_axi4s #(
-      .NAME("DUT_S_AXIS")
+       .NAME("DUT_S_AXIS")
     ) i_ast_axi4s_mst (
-       .clk     ( clk               )
-      ,.reset_n ( reset_n           )
-      ,.tvalid  ( w_s_axis_tvalid   )
-      ,.tready  ( w_s_axis_tready   )
-      ,.tdata   ( w_s_axis_tdata    )
+        .clk     ( clk               )
+       ,.reset_n ( reset_n           )
+       ,.tvalid  ( w_s_axis_tvalid   )
+       ,.tready  ( w_s_axis_tready   )
+       ,.tdata   ( w_s_axis_tdata    )
+    );
+
+    // scoreboard instance
+    one_cycle_delay_scoreboard  #(
+        .P_IN_DWIDTH           ( 32    )
+       ,.P_OUT_DWIDTH          ( 8     )
+       ,.ASSUME_SINGLE_STAGE   ( 1'b1  )
+    ) i_scoreboard (
+        .clk         ( clk               )
+       ,.rst_n       ( reset_n           )
+       ,.in_valid    ( w_s_axis_tvalid   )
+       ,.in_ready    ( w_s_axis_tready   )
+       ,.in_data     ( w_s_axis_tdata    )
+       ,.out_valid   ( w_m_axis_tvalid   )
+       ,.out_ready   ( w_m_axis_tready   )
+       ,.out_data    ( w_m_axis_tdata    )
     );
 
     // test start
